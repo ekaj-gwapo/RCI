@@ -13,7 +13,7 @@ export default function Home() {
             <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">
               T
             </div>
-            <span className="text-xl font-bold text-emerald-900">Transaction Hub</span>
+            <span className="text-xl font-bold text-emerald-900">Report of Checks Issued</span>
           </div>
           <Link href="/auth/login">
             <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
@@ -27,10 +27,10 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-6 py-20 text-center">
         <div className="space-y-6">
           <h1 className="text-5xl md:text-6xl font-bold text-emerald-900 leading-tight">
-            Smart Transaction Management
+            Checked & Issued Reports System
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Streamline your financial data entry and reporting. Two-role system for seamless collaboration and real-time access to transaction records.
+            Track, review, and manage all checked and issued items in one place. Generate accurate reports and monitor transaction history with real-time updates.
           </p>
           <Link href="/auth/login" className="inline-block">
             <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
