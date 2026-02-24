@@ -1,0 +1,253 @@
+'use client'
+
+import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import ViewerTransactionTable from '@/components/ViewerTransactionTable'
+import PrintReport from '@/components/PrintReport'
+import { LogOut, ChevronDown, Settings, Printer } from 'lucide-react'
+import Link from 'next/link'
+
+type Transaction = {
+  id: string
+  bankName: string
+  payee: string
+  address: string
+  dvNumber: string
+  particulars: string
+  amount: number
+  date: string
+  controlNumber: string
+  accountCode: string
+  debit: number
+  credit: number
+  remarks: string
+  createdAt: string
+  userId: string
+}
+
+type SortField = 'date' | 'controlNumber' | 'amount' | 'accountCode'
+
+export default function ViewerDashboard() {
+  const [user, setUser] = useState<any>(null)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [assignedEntryUsers, setAssignedEntryUsers] = useState<any[]>([])
+  const [selectedEntryUser, setSelectedEntryUser] = useState<string | null>(null)
+  const [sortBy, setSortBy] = useState<SortField>('date')
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedEntryUserEmail, setSelectedEntryUserEmail] = useState<string>('')
+  const printRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        router.push('/auth/login')
+        return
+      }
+
+      const user = JSON.parse(userStr)
+      if (user.role !== 'viewer_user') {
+        router.push('/entry-dashboard')
+        return
+      }
+
+      setUser(user)
+      fetchAssignedEntryUsers(user.id)
+      setIsLoading(false)
+    }
+
+    checkAuth()
+  }, [router])
+
+  const fetchAssignedEntryUsers = async (viewerId: string) => {
+    try {
+      const response = await fetch(`/api/viewer-assignments?viewerId=${viewerId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setAssignedEntryUsers(data)
+        if (data.length > 0) {
+          setSelectedEntryUser(data[0].entryUserId)
+          setSelectedEntryUserEmail(data[0].email || '')
+          await fetchTransactions(data[0].entryUserId)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching assigned users:', error)
+    }
+  }
+
+  const fetchTransactions = async (entryUserId: string) => {
+    try {
+      const response = await fetch(`/api/transactions?userId=${entryUserId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setSortedTransactions(data)
+      }
+    } catch (error) {
+      console.error('Error fetching transactions:', error)
+    }
+  }
+
+  const setSortedTransactions = (data: Transaction[]) => {
+    let sorted = [...data]
+    switch (sortBy) {
+      case 'date':
+        sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        break
+      case 'controlNumber':
+        sorted.sort((a, b) => a.controlNumber.localeCompare(b.controlNumber))
+        break
+      case 'amount':
+        sorted.sort((a, b) => b.amount - a.amount)
+        break
+      case 'accountCode':
+        sorted.sort((a, b) => a.accountCode.localeCompare(b.accountCode))
+        break
+    }
+    setTransactions(sorted)
+  }
+
+  const handleSortChange = (field: SortField) => {
+    setSortBy(field)
+    setSortedTransactions(transactions)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    router.push('/')
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-emerald-100 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-emerald-900">Viewer Dashboard</h1>
+            <p className="text-sm text-gray-600">{user?.email}</p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/settings">
+              <Button
+                variant="outline"
+                className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            </Link>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="text-red-600 border-red-300 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Selection and Sorting */}
+        <div className="bg-white rounded-lg p-6 mb-8 border border-emerald-100">
+          <div className="flex flex-col gap-6">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Data Entry User
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedEntryUser || ''}
+                  onChange={(e) => {
+                    setSelectedEntryUser(e.target.value)
+                    const selected = assignedEntryUsers.find((u) => u.entryUserId === e.target.value)
+                    if (selected) {
+                      setSelectedEntryUserEmail(selected.email || '')
+                      fetchTransactions(e.target.value)
+                    }
+                  }}
+                  className="w-full appearance-none rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 pr-10"
+                >
+                  <option value="">Choose a user...</option>
+                  {assignedEntryUsers.map((user) => (
+                    <option key={user.entryUserId} value={user.entryUserId}>
+                      {user.email}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sort By
+              </label>
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value as SortField)}
+                  className="w-full appearance-none rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 pr-10"
+                >
+                  <option value="date">Date</option>
+                  <option value="controlNumber">Control Number</option>
+                  <option value="amount">Amount</option>
+                  <option value="accountCode">Account Code</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Transaction Table */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
+            <Button
+              onClick={() => {
+                const printWindow = window.open('', '', 'height=1000,width=1200')
+                if (printWindow && printRef.current) {
+                  printWindow.document.write(printRef.current.outerHTML)
+                  printWindow.document.close()
+                  printWindow.print()
+                }
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              disabled={transactions.length === 0}
+            >
+              <Printer className="w-4 h-4 mr-2" />
+              Print Report
+            </Button>
+          </div>
+          <ViewerTransactionTable transactions={transactions} />
+        </div>
+      </div>
+
+      {/* Hidden Print Report */}
+      <div className="hidden">
+        <PrintReport
+          ref={printRef}
+          transactions={transactions}
+          entryUserEmail={selectedEntryUserEmail}
+        />
+      </div>
+    </div>
+  )
+}
