@@ -45,28 +45,34 @@ export default function TransactionForm({ userId, onSuccess }: TransactionFormPr
     try {
       if (!userId) throw new Error('User not authenticated')
 
+      const payload = {
+        bankName: formData.bank_name,
+        payee: formData.payee,
+        address: formData.address,
+        dvNumber: formData.dv_number,
+        particulars: formData.particulars,
+        amount: parseFloat(formData.amount),
+        date: formData.date,
+        controlNumber: formData.control_number,
+        accountCode: formData.account_code,
+        debit: parseFloat(formData.debit || '0'),
+        credit: parseFloat(formData.credit || '0'),
+        remarks: formData.remarks,
+      }
+      console.log('[v0] Sending payload:', payload)
+
       const response = await fetch(`/api/transactions?userId=${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bankName: formData.bank_name,
-          payee: formData.payee,
-          address: formData.address,
-          dvNumber: formData.dv_number,
-          particulars: formData.particulars,
-          amount: parseFloat(formData.amount),
-          date: formData.date,
-          controlNumber: formData.control_number,
-          accountCode: formData.account_code,
-          debit: parseFloat(formData.debit || '0'),
-          credit: parseFloat(formData.credit || '0'),
-          remarks: formData.remarks,
-        }),
+        body: JSON.stringify(payload),
       })
 
+      const data = await response.json()
+      console.log('[v0] Response status:', response.status)
+      console.log('[v0] Response data:', data)
+
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to create transaction')
+        throw new Error(data.error || data.message || 'Failed to create transaction')
       }
 
       setFormData({
