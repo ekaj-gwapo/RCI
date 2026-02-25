@@ -1,14 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertCircle } from 'lucide-react'
 
 type TransactionFormProps = {
-  userId: any;
+  userId: string;
   onSuccess?: () => void
 }
 
@@ -44,30 +43,31 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
     setError(null)
 
     try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      if (!userId) throw new Error('User not authenticated')
 
-      if (!user) throw new Error('User not authenticated')
-
-      const { error } = await supabase.from('transactions').insert({
-        user_id: user.id,
-        bank_name: formData.bank_name,
-        payee: formData.payee,
-        address: formData.address,
-        dv_number: formData.dv_number,
-        particulars: formData.particulars,
-        amount: parseFloat(formData.amount),
-        date: formData.date,
-        control_number: formData.control_number,
-        account_code: formData.account_code,
-        debit: parseFloat(formData.debit || '0'),
-        credit: parseFloat(formData.credit || '0'),
-        remarks: formData.remarks,
+      const response = await fetch(`/api/transactions?userId=${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bank_name: formData.bank_name,
+          payee: formData.payee,
+          address: formData.address,
+          dv_number: formData.dv_number,
+          particulars: formData.particulars,
+          amount: parseFloat(formData.amount),
+          date: formData.date,
+          control_number: formData.control_number,
+          account_code: formData.account_code,
+          debit: parseFloat(formData.debit || '0'),
+          credit: parseFloat(formData.credit || '0'),
+          remarks: formData.remarks,
+        }),
       })
 
-      if (error) throw error
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to create transaction')
+      }
 
       setFormData({
         bank_name: '',
