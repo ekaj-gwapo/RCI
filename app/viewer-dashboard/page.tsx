@@ -25,9 +25,10 @@ type Transaction = {
   remarks: string
   createdAt: string
   userId: string
+  fund: string
 }
 
-type SortField = 'date' | 'controlNumber' | 'amount' | 'accountCode'
+type SortField = 'date' | 'controlNumber' | 'amount' | 'accountCode' | 'fund'
 
 export default function ViewerDashboard() {
   const [user, setUser] = useState<any>(null)
@@ -41,8 +42,17 @@ export default function ViewerDashboard() {
   const [bankNames, setBankNames] = useState<string[]>([])
   const [selectedBankName, setSelectedBankName] = useState<string>('')
   const [selectedDate, setSelectedDate] = useState<string>('')
+  const [selectedFund, setSelectedFund] = useState<string>('')
   const printRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+
+  const fundOptions = [
+    'General Fund',
+    'Development Fund',
+    'Trust Fund',
+    'Hospital Fund',
+    'MOPH'
+  ]
 
   useEffect(() => {
     const checkAuth = () => {
@@ -115,6 +125,10 @@ export default function ViewerDashboard() {
       )
     }
 
+    if (selectedFund) {
+      filtered = filtered.filter(tx => tx.fund === selectedFund)
+    }
+
     let sorted = [...filtered]
     switch (sortBy) {
       case 'date':
@@ -128,6 +142,9 @@ export default function ViewerDashboard() {
         break
       case 'accountCode':
         sorted.sort((a, b) => a.accountCode.localeCompare(b.accountCode))
+        break
+      case 'fund':
+        sorted.sort((a, b) => a.fund.localeCompare(b.fund))
         break
     }
     setTransactions(sorted)
@@ -146,7 +163,7 @@ export default function ViewerDashboard() {
     if (allTransactions.length > 0) {
       applyFiltersAndSort(allTransactions)
     }
-  }, [selectedBankName, selectedDate, sortBy, allTransactions])
+  }, [selectedBankName, selectedDate, selectedFund, sortBy, allTransactions])
 
   const handleLogout = () => {
     localStorage.removeItem('user')
@@ -199,7 +216,7 @@ export default function ViewerDashboard() {
       <div className="w-full px-6 py-8">
         {/* Filters and Sorting */}
         <div className="bg-white rounded-lg p-6 mb-8 border border-emerald-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Bank Name
@@ -231,6 +248,24 @@ export default function ViewerDashboard() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                Fund
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedFund}
+                  onChange={(e) => setSelectedFund(e.target.value)}
+                  className="w-full appearance-none rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 pr-10"
+                >
+                  <option value="">All Funds</option>
+                  {fundOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Sort By
               </label>
               <div className="relative">
@@ -243,16 +278,18 @@ export default function ViewerDashboard() {
                   <option value="controlNumber">Control Number</option>
                   <option value="amount">Amount</option>
                   <option value="accountCode">Account Code</option>
+                  <option value="fund">Fund</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
               </div>
             </div>
           </div>
-          {(selectedBankName || selectedDate) && (
+          {(selectedBankName || selectedDate || selectedFund) && (
             <button
               onClick={() => {
                 setSelectedBankName('')
                 setSelectedDate('')
+                setSelectedFund('')
               }}
               className="mt-4 text-emerald-600 text-sm hover:underline"
             >

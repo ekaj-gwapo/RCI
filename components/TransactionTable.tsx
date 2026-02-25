@@ -18,13 +18,14 @@ type Transaction = {
   credit: number
   remarks: string
   createdAt: string
+  fund: string
 }
 
 type TransactionTableProps = {
   transactions: Transaction[]
 }
 
-type SortField = 'date' | 'bankName' | 'payee' | 'dvNumber' | 'controlNumber' | 'particulars' | 'amount' | 'accountCode'
+type SortField = 'date' | 'bankName' | 'payee' | 'dvNumber' | 'controlNumber' | 'particulars' | 'amount' | 'accountCode' | 'fund'
 
 export default function TransactionTable({ transactions }: TransactionTableProps) {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
@@ -88,6 +89,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                 <SortableHeader label="DV #" field="dvNumber" />
                 <SortableHeader label="Control #" field="controlNumber" />
                 <SortableHeader label="Particulars" field="particulars" />
+                <SortableHeader label="Fund" field="fund" />
                 <th className="px-6 py-3 text-right text-sm font-semibold text-emerald-900 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('amount')}>
                   <div className="flex items-center gap-2 justify-end">
                     Amount
@@ -117,6 +119,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   <td className="px-6 py-3 text-sm text-gray-900">{tx.dvNumber}</td>
                   <td className="px-6 py-3 text-sm text-gray-900">{tx.controlNumber}</td>
                   <td className="px-6 py-3 text-sm text-gray-900 max-w-xs truncate">{tx.particulars}</td>
+                  <td className="px-6 py-3 text-sm text-gray-900">{tx.fund}</td>
                   <td className="px-6 py-3 text-sm text-right text-gray-900 font-medium">
                     ${tx.amount.toFixed(2)}
                   </td>
@@ -174,6 +177,10 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             <div>
               <label className="text-xs font-semibold text-emerald-600 uppercase">Particulars</label>
               <p className="text-sm text-gray-900">{selectedTransaction.particulars}</p>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-emerald-600 uppercase">Fund</label>
+              <p className="text-sm text-gray-900">{selectedTransaction.fund}</p>
             </div>
             <div>
               <label className="text-xs font-semibold text-emerald-600 uppercase">Amount</label>

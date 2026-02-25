@@ -19,13 +19,14 @@ type Transaction = {
   remarks: string
   createdAt: string
   userId: string
+  fund: string
 }
 
 type ViewerTransactionTableProps = {
   transactions: Transaction[]
 }
 
-type SortField = 'date' | 'bankName' | 'payee' | 'dvNumber' | 'controlNumber' | 'particulars' | 'amount' | 'accountCode'
+type SortField = 'date' | 'bankName' | 'payee' | 'dvNumber' | 'controlNumber' | 'particulars' | 'amount' | 'accountCode' | 'fund'
 
 export default function ViewerTransactionTable({
   transactions,
@@ -93,6 +94,7 @@ export default function ViewerTransactionTable({
               <SortableHeader label="Control #" field="controlNumber" />
               <SortableHeader label="Particulars" field="particulars" />
               <SortableHeader label="Account Code" field="accountCode" />
+              <SortableHeader label="Fund" field="fund" />
               <th className="px-6 py-3 text-right text-sm font-semibold text-emerald-900 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('amount')}>
                 <div className="flex items-center gap-2 justify-end">
                   Amount
@@ -132,6 +134,7 @@ export default function ViewerTransactionTable({
                   {tx.particulars}
                 </td>
                 <td className="px-6 py-3 text-sm text-gray-900 font-medium">{tx.accountCode}</td>
+                <td className="px-6 py-3 text-sm text-gray-900">{tx.fund}</td>
                 <td className="px-6 py-3 text-sm text-right text-gray-900 font-semibold">
                   ${tx.amount.toFixed(2)}
                 </td>

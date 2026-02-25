@@ -38,7 +38,16 @@ export default function EntryDashboard() {
   const [bankNames, setBankNames] = useState<string[]>([])
   const [selectedBankName, setSelectedBankName] = useState<string>('')
   const [selectedDate, setSelectedDate] = useState<string>('')
+  const [selectedFund, setSelectedFund] = useState<string>('')
   const router = useRouter()
+
+  const fundOptions = [
+    'General Fund',
+    'Development Fund',
+    'Trust Fund',
+    'Hospital Fund',
+    'MOPH'
+  ]
 
   useEffect(() => {
     const checkAuth = () => {
@@ -94,6 +103,10 @@ export default function EntryDashboard() {
       )
     }
 
+    if (selectedFund) {
+      filtered = filtered.filter(tx => tx.fund === selectedFund)
+    }
+
     setTransactions(filtered)
   }
 
@@ -101,7 +114,7 @@ export default function EntryDashboard() {
     if (allTransactions.length > 0) {
       applyFilters()
     }
-  }, [selectedBankName, selectedDate, allTransactions])
+  }, [selectedBankName, selectedDate, selectedFund, allTransactions])
 
   const handleLogout = () => {
     localStorage.removeItem('user')
@@ -193,7 +206,7 @@ export default function EntryDashboard() {
             <CardTitle className="text-lg">Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="bank-filter" className="mb-2 block">Bank Name</Label>
                 <select
@@ -218,12 +231,27 @@ export default function EntryDashboard() {
                   className="w-full rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600"
                 />
               </div>
+              <div>
+                <Label htmlFor="fund-filter" className="mb-2 block">Fund</Label>
+                <select
+                  id="fund-filter"
+                  value={selectedFund}
+                  onChange={(e) => setSelectedFund(e.target.value)}
+                  className="w-full rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                >
+                  <option value="">All Funds</option>
+                  {fundOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            {(selectedBankName || selectedDate) && (
+            {(selectedBankName || selectedDate || selectedFund) && (
               <Button
                 onClick={() => {
                   setSelectedBankName('')
                   setSelectedDate('')
+                  setSelectedFund('')
                 }}
                 variant="outline"
                 className="mt-4 text-emerald-600 border-emerald-300 hover:bg-emerald-50"
@@ -239,5 +267,4 @@ export default function EntryDashboard() {
       </div>
     </div>
   )
-}
 }

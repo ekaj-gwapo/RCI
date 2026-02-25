@@ -27,7 +27,16 @@ export default function TransactionForm({ userId, onSuccess }: TransactionFormPr
     debit: '',
     credit: '',
     remarks: '',
+    fund: 'General Fund',
   })
+
+  const fundOptions = [
+    'General Fund',
+    'Development Fund',
+    'Trust Fund',
+    'Hospital Fund',
+    'MOPH'
+  ]
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -58,6 +67,7 @@ export default function TransactionForm({ userId, onSuccess }: TransactionFormPr
         debit: parseFloat(formData.debit || '0'),
         credit: parseFloat(formData.credit || '0'),
         remarks: formData.remarks,
+        fund: formData.fund,
       })
 
       const response = await fetch(`/api/transactions?userId=${userId}`, {
@@ -84,6 +94,7 @@ export default function TransactionForm({ userId, onSuccess }: TransactionFormPr
         debit: '',
         credit: '',
         remarks: '',
+        fund: 'General Fund',
       })
 
       onSuccess?.()
@@ -240,6 +251,21 @@ export default function TransactionForm({ userId, onSuccess }: TransactionFormPr
             placeholder="Enter account code"
           />
         </div>
+      </div>
+
+      <div>
+        <Label htmlFor="fund">Fund *</Label>
+        <select
+          id="fund"
+          name="fund"
+          value={formData.fund}
+          onChange={handleChange}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          {fundOptions.map(option => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
       </div>
 
       <div>
