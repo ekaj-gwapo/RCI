@@ -11,7 +11,7 @@ type TransactionFormProps = {
   onSuccess?: () => void
 }
 
-export default function TransactionForm({ onSuccess }: TransactionFormProps) {
+export default function TransactionForm({ userId, onSuccess }: TransactionFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
