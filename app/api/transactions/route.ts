@@ -48,24 +48,63 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const id = randomUUID()
 
+    // Validate required fields
+    if (!body.bankName || body.bankName.trim() === '') {
+      return NextResponse.json(
+        { error: 'Bank Name is required' },
+        { status: 400 }
+      )
+    }
+    if (!body.payee || body.payee.trim() === '') {
+      return NextResponse.json(
+        { error: 'Payee is required' },
+        { status: 400 }
+      )
+    }
+    if (!body.particulars || body.particulars.trim() === '') {
+      return NextResponse.json(
+        { error: 'Particulars is required' },
+        { status: 400 }
+      )
+    }
+    if (!body.amount || isNaN(parseFloat(body.amount))) {
+      return NextResponse.json(
+        { error: 'Amount is required and must be a valid number' },
+        { status: 400 }
+      )
+    }
+    if (!body.date) {
+      return NextResponse.json(
+        { error: 'Date is required' },
+        { status: 400 }
+      )
+    }
+    if (!body.accountCode || body.accountCode.trim() === '') {
+      return NextResponse.json(
+        { error: 'Account Code is required' },
+        { status: 400 }
+      )
+    }
+
     await db.run(
-      `INSERT INTO transactions (id, userId, bankName, payee, address, dvNumber, particulars, amount, date, controlNumber, accountCode, debit, credit, remarks)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO transactions (id, userId, bankName, payee, address, dvNumber, particulars, amount, date, controlNumber, accountCode, debit, credit, remarks, fund)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         userId,
-        body.bankName,
-        body.payee,
-        body.address || '',
-        body.dvNumber || '',
-        body.particulars,
+        body.bankName.trim(),
+        body.payee.trim(),
+        body.address ? body.address.trim() : '',
+        body.dvNumber ? body.dvNumber.trim() : '',
+        body.particulars.trim(),
         parseFloat(body.amount),
         body.date,
-        body.controlNumber || '',
-        body.accountCode || '',
+        body.controlNumber ? body.controlNumber.trim() : '',
+        body.accountCode.trim(),
         parseFloat(body.debit || 0),
         parseFloat(body.credit || 0),
-        body.remarks || '',
+        body.remarks ? body.remarks.trim() : '',
+        body.fund || 'General Fund',
       ]
     )
 

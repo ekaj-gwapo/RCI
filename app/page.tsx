@@ -1,186 +1,163 @@
-import Link from 'next/link'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowRight, Lock, Eye, FileText } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import TransactionForm from '@/components/TransactionForm'
+import TransactionTable from '@/components/TransactionTable'
+import { LogOut, Plus, Settings } from 'lucide-react'
+import Link from 'next/link'
 
-export default function Home() {
+type Transaction = {
+  id: string
+  bank_name: string
+  payee: string
+  address: string
+  dv_number: string
+  particulars: string
+  amount: number
+  date: string
+  control_number: string
+  account_code: string
+  debit: number
+  credit: number
+  remarks: string
+  created_at: string
+}
+
+export default function EntryDashboard() { 
+  const [user, setUser] = useState<any>(null)
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [showForm, setShowForm] = useState(false)
+  const [logo, setLogo] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        router.push('/auth/login')
+        return
+      }
+
+      const user = JSON.parse(userStr)
+      if (user.role !== 'entry_user') {
+        router.push('/viewer-dashboard')
+        return
+      }
+
+      setUser(user)
+      fetchTransactions(user.id)
+      setIsLoading(false)
+    }
+
+    checkAuth()
+  }, [router])
+
+  const fetchTransactions = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/transactions?userId=${userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setTransactions(data)
+      }
+    } catch (error) {
+      console.error('Error fetching transactions:', error)
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    router.push('/')
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-emerald-50 to-white">
-      {/* Navigation */}
-      <nav className="border-b border-emerald-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold">
-              T
-            </div>
-            <span className="text-xl font-bold text-emerald-900">Report of Checks Issued</span>
-          </div>
-          <Link href="/auth/login">
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-              Login
-            </Button>
-          </Link>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-6 py-20 text-center">
-        <div className="space-y-6">
-          <h1 className="text-5xl md:text-6xl font-bold text-emerald-900 leading-tight">
-            Checked & Issued Reports System
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Track, review, and manage all checked and issued items in one place. Generate accurate reports and monitor transaction history with real-time updates.
-          </p>
-          <Link href="/auth/login" className="inline-block">
-            <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
-              Login Now <ArrowRight className="w-5 h-5" />
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="bg-white py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-emerald-900 text-center mb-12">
-            Designed for Efficiency
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Entry User Card */}
-            <Card className="border-emerald-200 shadow-lg">
-              <CardHeader>
-                <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
-                  <FileText className="w-6 h-6 text-emerald-600" />
-                </div>
-                <CardTitle className="text-emerald-900">Data Entry User</CardTitle>
-                <CardDescription>Input and manage transaction data</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 text-gray-600">
-                <p>✓ Enter transaction details including:</p>
-                <ul className="ml-4 space-y-2 text-sm">
-                  <li>• Bank name, payee, and address</li>
-                  <li>• DV number and particulars</li>
-                  <li>• Amount, date, and account code</li>
-                  <li>• Debit/credit information</li>
-                  <li>• Control number and remarks</li>
-                </ul>
-                <p className="pt-2">Secure and organized data management with comprehensive validation.</p>
-              </CardContent>
-            </Card>
-
-            {/* Viewer User Card */}
-            <Card className="border-emerald-200 shadow-lg">
-              <CardHeader>
-                <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
-                  <Eye className="w-6 h-6 text-emerald-600" />
-                </div>
-                <CardTitle className="text-emerald-900">Viewer User</CardTitle>
-                <CardDescription>Access and analyze transaction records</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 text-gray-600">
-                <p>✓ Instant access to assigned transaction data</p>
-                <p>✓ Advanced sorting and filtering:</p>
-                <ul className="ml-4 space-y-2 text-sm">
-                  <li>• Sort by date</li>
-                  <li>• Sort by control code</li>
-                  <li>• Sort by amount</li>
-                  <li>• Sort by account code</li>
-                </ul>
-                <p className="pt-2">Real-time data synchronization and reporting capabilities.</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Demo Credentials Section */}
-      <section className="bg-emerald-600 py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">Try It Now</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Entry User Demo */}
-            <Card className="border-0 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-emerald-900">Data Entry User</CardTitle>
-                <CardDescription>Input transaction data</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Email:</p>
-                    <p className="text-lg font-mono text-gray-900">entry@demo.com</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Password:</p>
-                    <p className="text-lg font-mono text-gray-900">Demo123456!</p>
-                  </div>
-                </div>
-                <Link href="/auth/login" className="block">
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                    Login as Entry User
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-
-            {/* Viewer User Demo */}
-            <Card className="border-0 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-emerald-900">Viewer User</CardTitle>
-                <CardDescription>Access and report on data</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Email:</p>
-                    <p className="text-lg font-mono text-gray-900">viewer@demo.com</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Password:</p>
-                    <p className="text-lg font-mono text-gray-900">Demo123456!</p>
-                  </div>
-                </div>
-                <Link href="/auth/login" className="block">
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                    Login as Viewer User
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Security Section */}
-      <section className="bg-emerald-50 py-20">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex gap-6 items-start">
-            <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Lock className="w-6 h-6 text-white" />
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-emerald-100 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            {logo && (
+              <img src={logo} alt="Logo" className="h-10 w-10 object-contain" />
+            )}
             <div>
-              <h3 className="text-2xl font-bold text-emerald-900 mb-3">Enterprise Security</h3>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                Your data is protected with industry-leading security. We use role-based access control to ensure that viewers only see data assigned to them, and entry users maintain full control over their submissions.
-              </p>
-              <ul className="space-y-2 text-gray-600">
-                <li>✓ Secure authentication</li>
-                <li>✓ Role-based access control</li>
-                <li>✓ Encrypted data transmission</li>
-                <li>✓ Audit logging</li>
-              </ul>
+              <h1 className="text-2xl font-bold text-emerald-900">Data Entry Dashboard</h1>
+              <p className="text-sm text-gray-600">{user?.email}</p>
             </div>
           </div>
+          <div className="flex gap-2">
+            <Link href="/settings">
+              <Button
+                variant="outline"
+                className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            </Link>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="text-red-600 border-red-300 hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* Footer */}
-      <footer className="border-t border-emerald-100 bg-white py-8">
-        <div className="max-w-6xl mx-auto px-6 text-center text-gray-600">
-          <p>© 2026 Transaction Hub. Built for modern financial workflows.</p>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
+          <Button
+            onClick={() => setShowForm(!showForm)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            {showForm ? 'Hide Form' : 'Add Transaction'}
+          </Button>
         </div>
-      </footer>
+
+        {/* Transaction Form */}
+        {showForm && (
+          <Card className="mb-8 border-emerald-200">
+  <CardHeader>
+    <CardTitle>New Transaction</CardTitle>
+    <CardDescription>Enter transaction details</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <TransactionForm
+      userId={user?.id}
+      onSuccess={() => {
+        if (user?.id) fetchTransactions(user.id)
+        setShowForm(false)
+      }}
+    />
+  </CardContent>
+</Card>
+        )}
+
+        {/* Transaction Table */}
+        <TransactionTable transactions={transactions} />
+      </div>
     </div>
   )
 }
+

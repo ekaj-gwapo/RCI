@@ -1,18 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertCircle } from 'lucide-react'
 
 type TransactionFormProps = {
-  userId: any;
+  userId: string;
   onSuccess?: () => void
 }
 
-export default function TransactionForm({ onSuccess }: TransactionFormProps) {
+export default function TransactionForm({ userId, onSuccess }: TransactionFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -28,7 +27,16 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
     debit: '',
     credit: '',
     remarks: '',
+    fund: 'General Fund',
   })
+
+  const fundOptions = [
+    'General Fund',
+    'Development Fund',
+    'Trust Fund',
+    'Hospital Fund',
+    'MOPH'
+  ]
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -44,30 +52,34 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
     setError(null)
 
     try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      if (!userId) throw new Error('User not authenticated')
 
-      if (!user) throw new Error('User not authenticated')
-
-      const { error } = await supabase.from('transactions').insert({
-        user_id: user.id,
-        bank_name: formData.bank_name,
+      const payload = JSON.stringify({
+        bankName: formData.bank_name,
         payee: formData.payee,
         address: formData.address,
-        dv_number: formData.dv_number,
+        dvNumber: formData.dv_number,
         particulars: formData.particulars,
         amount: parseFloat(formData.amount),
         date: formData.date,
-        control_number: formData.control_number,
-        account_code: formData.account_code,
+        controlNumber: formData.control_number,
+        accountCode: formData.account_code,
         debit: parseFloat(formData.debit || '0'),
         credit: parseFloat(formData.credit || '0'),
         remarks: formData.remarks,
+        fund: formData.fund,
       })
 
-      if (error) throw error
+      const response = await fetch(`/api/transactions?userId=${userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to create transaction')
+      }
 
       setFormData({
         bank_name: '',
@@ -82,6 +94,7 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
         debit: '',
         credit: '',
         remarks: '',
+        fund: 'General Fund',
       })
 
       onSuccess?.()
@@ -238,6 +251,21 @@ export default function TransactionForm({ onSuccess }: TransactionFormProps) {
             placeholder="Enter account code"
           />
         </div>
+      </div>
+
+      <div>
+        <Label htmlFor="fund">Fund *</Label>
+        <select
+          id="fund"
+          name="fund"
+          value={formData.fund}
+          onChange={handleChange}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          {fundOptions.map(option => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
       </div>
 
       <div>
