@@ -135,7 +135,7 @@ export default function ViewerDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-emerald-100 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="w-full px-6 py-4 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-emerald-900">Viewer Dashboard</h1>
             <p className="text-sm text-gray-600">{user?.email}</p>
@@ -163,7 +163,7 @@ export default function ViewerDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="w-full px-6 py-8">
         {/* Sorting */}
         <div className="bg-white rounded-lg p-6 mb-8 border border-emerald-100">
           <div className="w-full sm:w-64">
