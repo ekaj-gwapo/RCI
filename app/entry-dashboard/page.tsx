@@ -98,8 +98,10 @@ export default function EntryDashboard() {
   }
 
   useEffect(() => {
-    applyFilters()
-  }, [selectedBankName, selectedDate])
+    if (allTransactions.length > 0) {
+      applyFilters()
+    }
+  }, [selectedBankName, selectedDate, allTransactions])
 
   const handleLogout = () => {
     localStorage.removeItem('user')

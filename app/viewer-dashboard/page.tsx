@@ -143,8 +143,10 @@ export default function ViewerDashboard() {
   }
 
   useEffect(() => {
-    applyFiltersAndSort(allTransactions)
-  }, [selectedBankName, selectedDate])
+    if (allTransactions.length > 0) {
+      applyFiltersAndSort(allTransactions)
+    }
+  }, [selectedBankName, selectedDate, sortBy, allTransactions])
 
   const handleLogout = () => {
     localStorage.removeItem('user')
