@@ -2,6 +2,7 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,6 +11,12 @@ async function migrate() {
   const dbPath = path.join(__dirname, '..', 'data.db');
   
   try {
+    // Create the directory if it doesn't exist
+    const dbDir = path.dirname(dbPath);
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+
     const db = await open({
       filename: dbPath,
       driver: sqlite3.Database,
