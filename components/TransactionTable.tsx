@@ -1,31 +1,70 @@
 'use client'
 
-import { useState } from 'react'
-import { X } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { X, ArrowUpDown } from 'lucide-react'
 
 type Transaction = {
   id: string
-  bank_name: string
+  bankName: string
   payee: string
   address: string
-  dv_number: string
+  dvNumber: string
   particulars: string
   amount: number
   date: string
-  control_number: string
-  account_code: string
+  controlNumber: string
+  accountCode: string
   debit: number
   credit: number
   remarks: string
-  created_at: string
+  createdAt: string
 }
 
 type TransactionTableProps = {
   transactions: Transaction[]
 }
 
+type SortField = 'date' | 'bankName' | 'payee' | 'dvNumber' | 'controlNumber' | 'particulars' | 'amount' | 'accountCode'
+
 export default function TransactionTable({ transactions }: TransactionTableProps) {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+  const [sortField, setSortField] = useState<SortField>('date')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+
+  const sortedTransactions = useMemo(() => {
+    const sorted = [...transactions].sort((a, b) => {
+      const aVal = a[sortField]
+      const bVal = b[sortField]
+
+      if (typeof aVal === 'string') {
+        return sortDirection === 'asc' ? aVal.localeCompare(bVal as string) : (bVal as string).localeCompare(aVal)
+      }
+
+      return sortDirection === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number)
+    })
+    return sorted
+  }, [transactions, sortField, sortDirection])
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
+
+  const SortableHeader = ({ label, field }: { label: string; field: SortField }) => (
+    <th
+      onClick={() => handleSort(field)}
+      className="px-6 py-3 text-left text-sm font-semibold text-emerald-900 cursor-pointer hover:bg-emerald-100 transition-colors"
+    >
+      <div className="flex items-center gap-2">
+        {label}
+        {sortField === field && <ArrowUpDown className="w-4 h-4" />}
+      </div>
+    </th>
+  )
   if (transactions.length === 0) {
     return (
       <div className="bg-white border border-emerald-100 rounded-lg p-8 text-center">
@@ -42,19 +81,24 @@ export default function TransactionTable({ transactions }: TransactionTableProps
           <table className="w-full">
             <thead>
               <tr className="border-b border-emerald-100 bg-emerald-50 sticky top-0">
-                <th className="px-6 py-3 text-left text-sm font-semibold text-emerald-900">Date</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-emerald-900">Bank</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-emerald-900">Payee</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-emerald-900">DV #</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-emerald-900">Control #</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-emerald-900">Particulars</th>
-                <th className="px-6 py-3 text-right text-sm font-semibold text-emerald-900">Amount</th>
+                <SortableHeader label="Date" field="date" />
+                <SortableHeader label="Bank" field="bankName" />
+                <SortableHeader label="Payee" field="payee" />
+                <SortableHeader label="DV #" field="dvNumber" />
+                <SortableHeader label="Control #" field="controlNumber" />
+                <SortableHeader label="Particulars" field="particulars" />
+                <th className="px-6 py-3 text-right text-sm font-semibold text-emerald-900 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('amount')}>
+                  <div className="flex items-center gap-2 justify-end">
+                    Amount
+                    {sortField === 'amount' && <ArrowUpDown className="w-4 h-4" />}
+                  </div>
+                </th>
                 <th className="px-6 py-3 text-right text-sm font-semibold text-emerald-900">Debit</th>
                 <th className="px-6 py-3 text-right text-sm font-semibold text-emerald-900">Credit</th>
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx, idx) => (
+              {sortedTransactions.map((tx, idx) => (
                 <tr
                   key={tx.id}
                   onClick={() => setSelectedTransaction(tx)}
@@ -67,10 +111,10 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   }`}
                 >
                   <td className="px-6 py-3 text-sm text-gray-900">{new Date(tx.date).toLocaleDateString()}</td>
-                  <td className="px-6 py-3 text-sm text-gray-900">{tx.bank_name}</td>
+                  <td className="px-6 py-3 text-sm text-gray-900">{tx.bankName}</td>
                   <td className="px-6 py-3 text-sm text-gray-900">{tx.payee}</td>
-                  <td className="px-6 py-3 text-sm text-gray-900">{tx.dv_number}</td>
-                  <td className="px-6 py-3 text-sm text-gray-900">{tx.control_number}</td>
+                  <td className="px-6 py-3 text-sm text-gray-900">{tx.dvNumber}</td>
+                  <td className="px-6 py-3 text-sm text-gray-900">{tx.controlNumber}</td>
                   <td className="px-6 py-3 text-sm text-gray-900 max-w-xs truncate">{tx.particulars}</td>
                   <td className="px-6 py-3 text-sm text-right text-gray-900 font-medium">
                     ${tx.amount.toFixed(2)}
@@ -108,7 +152,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             </div>
             <div>
               <label className="text-xs font-semibold text-emerald-600 uppercase">Bank Name</label>
-              <p className="text-sm text-gray-900">{selectedTransaction.bank_name}</p>
+              <p className="text-sm text-gray-900">{selectedTransaction.bankName}</p>
             </div>
             <div>
               <label className="text-xs font-semibold text-emerald-600 uppercase">Payee</label>
@@ -120,11 +164,11 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             </div>
             <div>
               <label className="text-xs font-semibold text-emerald-600 uppercase">DV Number</label>
-              <p className="text-sm text-gray-900">{selectedTransaction.dv_number}</p>
+              <p className="text-sm text-gray-900">{selectedTransaction.dvNumber}</p>
             </div>
             <div>
               <label className="text-xs font-semibold text-emerald-600 uppercase">Control Number</label>
-              <p className="text-sm text-gray-900">{selectedTransaction.control_number}</p>
+              <p className="text-sm text-gray-900">{selectedTransaction.controlNumber}</p>
             </div>
             <div>
               <label className="text-xs font-semibold text-emerald-600 uppercase">Particulars</label>
@@ -146,7 +190,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             </div>
             <div>
               <label className="text-xs font-semibold text-emerald-600 uppercase">Account Code</label>
-              <p className="text-sm text-gray-900">{selectedTransaction.account_code}</p>
+              <p className="text-sm text-gray-900">{selectedTransaction.accountCode}</p>
             </div>
             <div>
               <label className="text-xs font-semibold text-emerald-600 uppercase">Remarks</label>

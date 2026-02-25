@@ -13,19 +13,19 @@ import Link from 'next/link'
 
 type Transaction = {
   id: string
-  bank_name: string
+  bankName: string
   payee: string
   address: string
-  dv_number: string
+  dvNumber: string
   particulars: string
   amount: number
   date: string
-  control_number: string
-  account_code: string
+  controlNumber: string
+  accountCode: string
   debit: number
   credit: number
   remarks: string
-  created_at: string
+  createdAt: string
 }
 
 export default function EntryDashboard() { 
