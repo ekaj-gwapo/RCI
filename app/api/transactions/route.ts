@@ -48,13 +48,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const id = randomUUID()
 
-    console.log('[v0] Received body:', body)
-    console.log('[v0] bankName value:', body.bankName)
-    console.log('[v0] bankName type:', typeof body.bankName)
-
     // Validate required fields
     if (!body.bankName || body.bankName.trim() === '') {
-      console.log('[v0] Bank Name validation failed')
       return NextResponse.json(
         { error: 'Bank Name is required' },
         { status: 400 }

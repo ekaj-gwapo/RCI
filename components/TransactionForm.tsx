@@ -45,7 +45,7 @@ export default function TransactionForm({ userId, onSuccess }: TransactionFormPr
     try {
       if (!userId) throw new Error('User not authenticated')
 
-      const payload = {
+      const payload = JSON.stringify({
         bankName: formData.bank_name,
         payee: formData.payee,
         address: formData.address,
@@ -58,13 +58,12 @@ export default function TransactionForm({ userId, onSuccess }: TransactionFormPr
         debit: parseFloat(formData.debit || '0'),
         credit: parseFloat(formData.credit || '0'),
         remarks: formData.remarks,
-      }
-      console.log('[v0] Payload:', payload)
+      })
 
       const response = await fetch(`/api/transactions?userId=${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload,
       })
 
       if (!response.ok) {
