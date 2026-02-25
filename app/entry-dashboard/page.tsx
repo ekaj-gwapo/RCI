@@ -72,7 +72,7 @@ export default function EntryDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('user')
-    router.push('/')
+    router.push('/auth/login')
   }
 
   if (isLoading) {
@@ -90,7 +90,7 @@ export default function EntryDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-emerald-100 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="w-full px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             {logo && (
               <img src={logo} alt="Logo" className="h-10 w-10 object-contain" />
@@ -123,7 +123,7 @@ export default function EntryDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="w-full px-6 py-8 flex flex-col gap-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
           <Button

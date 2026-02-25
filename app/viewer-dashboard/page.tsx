@@ -117,7 +117,7 @@ export default function ViewerDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('user')
-    router.push('/')
+    router.push('/auth/login')
   }
 
   if (isLoading) {
@@ -164,54 +164,24 @@ export default function ViewerDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Selection and Sorting */}
+        {/* Sorting */}
         <div className="bg-white rounded-lg p-6 mb-8 border border-emerald-100">
-          <div className="flex flex-col gap-6">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Data Entry User
-              </label>
-              <div className="relative">
-                <select
-                  value={selectedEntryUser || ''}
-                  onChange={(e) => {
-                    setSelectedEntryUser(e.target.value)
-                    const selected = assignedEntryUsers.find((u) => u.entryUserId === e.target.value)
-                    if (selected) {
-                      setSelectedEntryUserEmail(selected.email || '')
-                      fetchTransactions(e.target.value)
-                    }
-                  }}
-                  className="w-full appearance-none rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 pr-10"
-                >
-                  <option value="">Choose a user...</option>
-                  {assignedEntryUsers.map((user) => (
-                    <option key={user.entryUserId} value={user.entryUserId}>
-                      {user.email}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sort By
-              </label>
-              <div className="relative">
-                <select
-                  value={sortBy}
-                  onChange={(e) => handleSortChange(e.target.value as SortField)}
-                  className="w-full appearance-none rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 pr-10"
-                >
-                  <option value="date">Date</option>
-                  <option value="controlNumber">Control Number</option>
-                  <option value="amount">Amount</option>
-                  <option value="accountCode">Account Code</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
-              </div>
+          <div className="w-full sm:w-64">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sort By
+            </label>
+            <div className="relative">
+              <select
+                value={sortBy}
+                onChange={(e) => handleSortChange(e.target.value as SortField)}
+                className="w-full appearance-none rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 pr-10"
+              >
+                <option value="date">Date</option>
+                <option value="controlNumber">Control Number</option>
+                <option value="amount">Amount</option>
+                <option value="accountCode">Account Code</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
             </div>
           </div>
         </div>
