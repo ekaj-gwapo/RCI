@@ -67,6 +67,9 @@ export default function EntryDashboard() {
       }
     } catch (error) {
       console.error('Error fetching transactions:', error)
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('user')
     router.push('/')
@@ -156,6 +159,5 @@ export default function EntryDashboard() {
       </div>
     </div>
   )
-}
 }
 }
