@@ -17,7 +17,6 @@ type Transaction = {
   credit: number
   remarks: string
   created_at: string
-  user_id: string
 }
 
 interface PrintReportProps {
