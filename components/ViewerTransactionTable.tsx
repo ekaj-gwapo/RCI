@@ -2,19 +2,20 @@
 
 type Transaction = {
   id: string
-  bank_name: string
+  bankName: string
   payee: string
   address: string
-  dv_number: string
+  dvNumber: string
   particulars: string
   amount: number
   date: string
-  control_number: string
-  account_code: string
+  controlNumber: string
+  accountCode: string
   debit: number
   credit: number
   remarks: string
-  created_at: string
+  createdAt: string
+  userId: string
 }
 
 type ViewerTransactionTableProps = {
@@ -81,19 +82,19 @@ export default function ViewerTransactionTable({
                 <td className="px-6 py-3 text-sm text-gray-900 font-medium">
                   {new Date(tx.date).toLocaleDateString()}
                 </td>
-                <td className="px-6 py-3 text-sm text-gray-900">{tx.bank_name}</td>
+                <td className="px-6 py-3 text-sm text-gray-900">{tx.bankName}</td>
                 <td className="px-6 py-3 text-sm text-gray-900">{tx.payee}</td>
                 <td className="px-6 py-3 text-sm text-gray-900 max-w-xs truncate">
                   {tx.address}
                 </td>
-                <td className="px-6 py-3 text-sm text-gray-900 font-medium">{tx.dv_number}</td>
+                <td className="px-6 py-3 text-sm text-gray-900 font-medium">{tx.dvNumber}</td>
                 <td className="px-6 py-3 text-sm text-gray-900 font-medium">
-                  {tx.control_number}
+                  {tx.controlNumber}
                 </td>
                 <td className="px-6 py-3 text-sm text-gray-900 max-w-xs truncate">
                   {tx.particulars}
                 </td>
-                <td className="px-6 py-3 text-sm text-gray-900 font-medium">{tx.account_code}</td>
+                <td className="px-6 py-3 text-sm text-gray-900 font-medium">{tx.accountCode}</td>
                 <td className="px-6 py-3 text-sm text-right text-gray-900 font-semibold">
                   ${tx.amount.toFixed(2)}
                 </td>

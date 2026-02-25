@@ -65,6 +65,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       </div>
     </th>
   )
+
   if (transactions.length === 0) {
     return (
       <div className="bg-white border border-emerald-100 rounded-lg p-8 text-center">

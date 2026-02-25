@@ -31,9 +31,13 @@ type Transaction = {
 export default function EntryDashboard() { 
   const [user, setUser] = useState<any>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([])
   const [showForm, setShowForm] = useState(false)
   const [logo, setLogo] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [bankNames, setBankNames] = useState<string[]>([])
+  const [selectedBankName, setSelectedBankName] = useState<string>('')
+  const [selectedDate, setSelectedDate] = useState<string>('')
   const router = useRouter()
 
   useEffect(() => {
@@ -63,12 +67,39 @@ export default function EntryDashboard() {
       const response = await fetch(`/api/transactions?userId=${userId}`)
       if (response.ok) {
         const data = await response.json()
+        setAllTransactions(data)
         setTransactions(data)
+        extractBankNames(data)
       }
     } catch (error) {
       console.error('Error fetching transactions:', error)
     }
   }
+
+  const extractBankNames = (txs: Transaction[]) => {
+    const names = Array.from(new Set(txs.map(tx => tx.bankName).filter(Boolean)))
+    setBankNames(names.sort())
+  }
+
+  const applyFilters = () => {
+    let filtered = [...allTransactions]
+    
+    if (selectedBankName) {
+      filtered = filtered.filter(tx => tx.bankName === selectedBankName)
+    }
+    
+    if (selectedDate) {
+      filtered = filtered.filter(tx => 
+        new Date(tx.date).toLocaleDateString() === new Date(selectedDate).toLocaleDateString()
+      )
+    }
+    
+    setTransactions(filtered)
+  }
+
+  useEffect(() => {
+    applyFilters()
+  }, [selectedBankName, selectedDate])
 
   const handleLogout = () => {
     localStorage.removeItem('user')
@@ -153,6 +184,53 @@ export default function EntryDashboard() {
   </CardContent>
 </Card>
         )}
+
+        {/* Filters */}
+        <Card className="border-emerald-200">
+          <CardHeader>
+            <CardTitle className="text-lg">Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="bank-filter" className="mb-2 block">Bank Name</Label>
+                <select
+                  id="bank-filter"
+                  value={selectedBankName}
+                  onChange={(e) => setSelectedBankName(e.target.value)}
+                  className="w-full rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                >
+                  <option value="">All Bank Names</option>
+                  {bankNames.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="date-filter" className="mb-2 block">Date</Label>
+                <input
+                  id="date-filter"
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+              </div>
+            </div>
+            {(selectedBankName || selectedDate) && (
+              <Button
+                onClick={() => {
+                  setSelectedBankName('')
+                  setSelectedDate('')
+                }}
+                variant="outline"
+                className="mt-4 text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+              >
+                Clear Filters
+              </Button>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Transaction Table */}
         <TransactionTable transactions={transactions} />

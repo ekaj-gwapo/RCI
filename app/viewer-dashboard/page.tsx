@@ -32,11 +32,15 @@ type SortField = 'date' | 'controlNumber' | 'amount' | 'accountCode'
 export default function ViewerDashboard() {
   const [user, setUser] = useState<any>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([])
   const [assignedEntryUsers, setAssignedEntryUsers] = useState<any[]>([])
   const [selectedEntryUser, setSelectedEntryUser] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<SortField>('date')
   const [isLoading, setIsLoading] = useState(true)
   const [selectedEntryUserEmail, setSelectedEntryUserEmail] = useState<string>('')
+  const [bankNames, setBankNames] = useState<string[]>([])
+  const [selectedBankName, setSelectedBankName] = useState<string>('')
+  const [selectedDate, setSelectedDate] = useState<string>('')
   const printRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -84,6 +88,8 @@ export default function ViewerDashboard() {
       const response = await fetch(`/api/transactions?userId=${entryUserId}`)
       if (response.ok) {
         const data = await response.json()
+        setAllTransactions(data)
+        extractBankNames(data)
         setSortedTransactions(data)
       }
     } catch (error) {
@@ -91,8 +97,25 @@ export default function ViewerDashboard() {
     }
   }
 
-  const setSortedTransactions = (data: Transaction[]) => {
-    let sorted = [...data]
+  const extractBankNames = (txs: Transaction[]) => {
+    const names = Array.from(new Set(txs.map(tx => tx.bankName).filter(Boolean)))
+    setBankNames(names.sort())
+  }
+
+  const applyFiltersAndSort = (data: Transaction[]) => {
+    let filtered = [...data]
+    
+    if (selectedBankName) {
+      filtered = filtered.filter(tx => tx.bankName === selectedBankName)
+    }
+    
+    if (selectedDate) {
+      filtered = filtered.filter(tx => 
+        new Date(tx.date).toLocaleDateString() === new Date(selectedDate).toLocaleDateString()
+      )
+    }
+
+    let sorted = [...filtered]
     switch (sortBy) {
       case 'date':
         sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -110,10 +133,18 @@ export default function ViewerDashboard() {
     setTransactions(sorted)
   }
 
+  const setSortedTransactions = (data: Transaction[]) => {
+    applyFiltersAndSort(data)
+  }
+
   const handleSortChange = (field: SortField) => {
     setSortBy(field)
-    setSortedTransactions(transactions)
+    applyFiltersAndSort(allTransactions)
   }
+
+  useEffect(() => {
+    applyFiltersAndSort(allTransactions)
+  }, [selectedBankName, selectedDate])
 
   const handleLogout = () => {
     localStorage.removeItem('user')
@@ -164,26 +195,68 @@ export default function ViewerDashboard() {
 
       {/* Main Content */}
       <div className="w-full px-6 py-8">
-        {/* Sorting */}
+        {/* Filters and Sorting */}
         <div className="bg-white rounded-lg p-6 mb-8 border border-emerald-100">
-          <div className="w-full sm:w-64">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sort By
-            </label>
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value as SortField)}
-                className="w-full appearance-none rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 pr-10"
-              >
-                <option value="date">Date</option>
-                <option value="controlNumber">Control Number</option>
-                <option value="amount">Amount</option>
-                <option value="accountCode">Account Code</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bank Name
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedBankName}
+                  onChange={(e) => setSelectedBankName(e.target.value)}
+                  className="w-full appearance-none rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 pr-10"
+                >
+                  <option value="">All Bank Names</option>
+                  {bankNames.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sort By
+              </label>
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value as SortField)}
+                  className="w-full appearance-none rounded-lg border border-emerald-200 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 pr-10"
+                >
+                  <option value="date">Date</option>
+                  <option value="controlNumber">Control Number</option>
+                  <option value="amount">Amount</option>
+                  <option value="accountCode">Account Code</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
+              </div>
             </div>
           </div>
+          {(selectedBankName || selectedDate) && (
+            <button
+              onClick={() => {
+                setSelectedBankName('')
+                setSelectedDate('')
+              }}
+              className="mt-4 text-emerald-600 text-sm hover:underline"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
 
         {/* Transaction Table */}
