@@ -4,19 +4,19 @@ import { forwardRef } from 'react'
 
 type Transaction = {
   id: string
-  bank_name: string
+  bankName: string
   payee: string
   address: string
-  dv_number: string
+  dvNumber: string
   particulars: string
   amount: number
   date: string
-  control_number: string
-  account_code: string
+  controlNumber: string
+  accountCode: string
   debit: number
   credit: number
   remarks: string
-  created_at: string
+  createdAt: string
 }
 
 interface PrintReportProps {
@@ -104,11 +104,11 @@ const PrintReport = forwardRef<HTMLDivElement, PrintReportProps>(
             {transactions.map((transaction, index) => (
               <tr key={transaction.id} className="border-b border-gray-300">
                 <td className="py-2 px-2">{formatDate(transaction.date)}</td>
-                <td className="py-2 px-2">{transaction.dv_number}</td>
-                <td className="py-2 px-2">{transaction.control_number}</td>
-                <td className="py-2 px-2">{transaction.bank_name}</td>
+                <td className="py-2 px-2">{transaction.dvNumber}</td>
+                <td className="py-2 px-2">{transaction.controlNumber}</td>
+                <td className="py-2 px-2">{transaction.bankName}</td>
                 <td className="py-2 px-2">{transaction.payee}</td>
-                <td className="py-2 px-2">{transaction.account_code}</td>
+                <td className="py-2 px-2">{transaction.accountCode}</td>
                 <td className="py-2 px-2">{transaction.particulars}</td>
                 <td className="py-2 px-2 text-right font-semibold">
                   {formatCurrency(transaction.amount)}

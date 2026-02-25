@@ -28,7 +28,7 @@ type Transaction = {
   createdAt: string
 }
 
-export default function EntryDashboard() { 
+export default function EntryDashboard() {
   const [user, setUser] = useState<any>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([])
@@ -83,17 +83,17 @@ export default function EntryDashboard() {
 
   const applyFilters = () => {
     let filtered = [...allTransactions]
-    
+
     if (selectedBankName) {
       filtered = filtered.filter(tx => tx.bankName === selectedBankName)
     }
-    
+
     if (selectedDate) {
-      filtered = filtered.filter(tx => 
+      filtered = filtered.filter(tx =>
         new Date(tx.date).toLocaleDateString() === new Date(selectedDate).toLocaleDateString()
       )
     }
-    
+
     setTransactions(filtered)
   }
 
@@ -171,20 +171,20 @@ export default function EntryDashboard() {
         {/* Transaction Form */}
         {showForm && (
           <Card className="mb-8 border-emerald-200">
-  <CardHeader>
-    <CardTitle>New Transaction</CardTitle>
-    <CardDescription>Enter transaction details</CardDescription>
-  </CardHeader>
-  <CardContent>
-    <TransactionForm
-      userId={user?.id}
-      onSuccess={() => {
-        if (user?.id) fetchTransactions(user.id)
-        setShowForm(false)
-      }}
-    />
-  </CardContent>
-</Card>
+            <CardHeader>
+              <CardTitle>New Transaction</CardTitle>
+              <CardDescription>Enter transaction details</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TransactionForm
+                userId={user?.id}
+                onSuccess={() => {
+                  if (user?.id) fetchTransactions(user.id)
+                  setShowForm(false)
+                }}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* Filters */}
