@@ -35,7 +35,6 @@ async function initDb() {
         debit REAL DEFAULT 0,
         credit REAL DEFAULT 0,
         remarks TEXT,
-        fund TEXT DEFAULT 'General Fund',
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (userId) REFERENCES users(id)
       );
